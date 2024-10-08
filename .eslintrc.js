@@ -7,13 +7,23 @@
 module.exports = {
   root: true,
   env: {
-    node: true,
+    node: true
   },
   extends: [
-    'vuetify',
-    './.eslintrc-auto-import.json',
+    'plugin:vue/vue3-recommended',
+    'eslint:recommended',
+    '@vue/standard'
   ],
   rules: {
     'vue/multi-word-component-names': 'off',
+    camelcase: 'off'
   },
+  overrides: [
+    {
+      files: ['src/layouts/**', 'src/pages/**'],
+      rules: {
+        'vue/multi-word-component-names': 'off'
+      }
+    }
+  ]
 }
