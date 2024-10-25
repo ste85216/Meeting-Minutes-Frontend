@@ -2,13 +2,16 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import UserRole from '@/enums/UserRole.js'
 import { useApi } from '@/composables/axios'
+import { useRouter } from 'vue-router'
 
 export const useUserStore = defineStore('user', () => {
   const { api, apiAuth } = useApi()
+  const router = useRouter()
 
   const token = ref('')
   const email = ref('')
   const name = ref('')
+  const department = ref('')
   const avatar = ref('')
   const role = ref(UserRole.USER)
   const userId = ref('')
@@ -30,6 +33,12 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 新增 Google 登入邏輯
+  const googleLogin = () => {
+    // 改用 Vue Router 來重導向
+    window.location.assign('http://localhost:4000/user/auth/google')
+  }
+
   const profile = async () => {
     if (!isLogin.value) return
 
@@ -38,6 +47,7 @@ export const useUserStore = defineStore('user', () => {
       role.value = data.result.role
       avatar.value = data.result.avatar
       name.value = data.result.name
+      department.value = data.result.department
       userId.value = data.result.userId
       email.value = data.result.email
     } catch (error) {
@@ -53,22 +63,22 @@ export const useUserStore = defineStore('user', () => {
 
   const logout = async () => {
     try {
-      await apiAuth.delete('/user/delete')
+      await apiAuth.delete('/user/logout')
     } catch (error) {
       console.log(error)
     }
     token.value = ''
     email.value = ''
     avatar.value = ''
-    role.value = UserRole.NONE
+    role.value = UserRole.USER
     userId.value = ''
-    window.location.reload()
   }
 
   return {
     token,
     email,
     name,
+    department,
     avatar,
     role,
     userId,
@@ -76,7 +86,8 @@ export const useUserStore = defineStore('user', () => {
     isAdmin,
     login,
     logout,
-    profile
+    profile,
+    googleLogin
   }
 }, {
   persist: {

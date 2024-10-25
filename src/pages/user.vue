@@ -1,5 +1,8 @@
 <template>
   <v-container max-width="1400">
+    <h2 class="my-6">
+      使用者管理
+    </h2>
     <v-row>
       <v-col>
         <v-row>
@@ -32,6 +35,8 @@
           v-model:items-per-page="tableItemsPerPage"
           v-model:sort-by="tableSortBy"
           v-model:page="tablePage"
+          color="red"
+          density="compact"
           :items-per-page-options="[10, 20 ,50]"
           :items="tableItems"
           :headers="tableHeaders"
@@ -63,54 +68,91 @@
   <v-dialog
     v-model="dialog.open"
     persistent
-    width="360"
+    width="800"
   >
     <v-form
       :disabled="isSubmitting"
       @submit.prevent="submit"
     >
-      <v-card class="rounded-xl pa-4 pt-6">
+      <v-card class="rounded-lg pa-4 pt-6">
         <v-card-title style="font-size: 18px;">
           {{ dialog.id ? '使用者資料編輯' : '新增使用者' }}
         </v-card-title>
         <v-card-text class="mt-3 pa-3">
-          <!-- 表單字段 -->
-          <v-text-field
-            v-model="email.value.value"
-            :error-messages="email.errorMessage.value"
-            class="mt-2"
-            label="email"
-            type="email"
-            variant="outlined"
-            density="compact"
-            min-length="4"
-            maxlength="20"
-            clearable
-          />
-          <v-text-field
-            v-model="name.value.value"
-            :error-messages="name.errorMessage.value"
-            class="mt-2"
-            label="姓名"
-            type="text"
-            variant="outlined"
-            density="compact"
-            min-length="4"
-            maxlength="20"
-            clearable
-          />
-          <v-select
-            v-model="role.value.value"
-            :error-messages="role.errorMessage.value"
-            :items="roles"
-            item-title="title"
-            item-value="value"
-            class="mt-2"
-            label="權限"
-            variant="outlined"
-            density="compact"
-            clearable
-          />
+          <v-row>
+            <v-col
+              sm="5"
+            >
+              <v-text-field
+                v-model="email.value.value"
+                :error-messages="email.errorMessage.value"
+                class="mt-2"
+                label="email"
+                type="email"
+                variant="outlined"
+                density="compact"
+                min-length="4"
+                clearable
+              />
+            </v-col>
+            <v-col sm="3">
+              <v-text-field
+                v-model="name.value.value"
+                :error-messages="name.errorMessage.value"
+                class="mt-2"
+                label="姓名"
+                type="text"
+                variant="outlined"
+                density="compact"
+                min-length="4"
+                maxlength="20"
+                clearable
+              />
+            </v-col>
+            <v-col
+              sm="4"
+            >
+              <v-text-field
+                class="mt-2"
+                label="英文名"
+                type="text"
+                variant="outlined"
+                density="compact"
+                min-length="4"
+                maxlength="20"
+                clearable
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col sm="6">
+              <v-select
+                v-model="department.value.value"
+                :error-messages="department.errorMessage.value"
+                :items="departments"
+                item-title="name"
+                item-value="_id"
+                label="選擇部門"
+                variant="outlined"
+                density="compact"
+                clearable
+              />
+            </v-col>
+            <v-col col="6">
+              <v-select
+                v-model="role.value.value"
+                :error-messages="role.errorMessage.value"
+                :items="roles"
+                item-title="title"
+                item-value="value"
+                label="權限"
+                variant="outlined"
+                density="compact"
+                clearable
+              />
+            </v-col>
+          </v-row>
+
           <v-text-field
             v-if="!dialog.id"
             v-model="password.value.value"
@@ -145,14 +187,18 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            color="red"
+            color="red-lighten-1"
+            variant="outlined"
+            size="small"
             :loading="isSubmitting"
             @click="closeDialog"
           >
             取消
           </v-btn>
           <v-btn
-            color="green"
+            color="teal-darken-1"
+            variant="outlined"
+            size="small"
             type="submit"
             :loading="isSubmitting"
           >
@@ -169,68 +215,146 @@
     persistent
     width="400"
   >
-    <v-card>
-      <v-card-title>部門管理</v-card-title>
+    <v-card class="rounded-lg">
+      <v-card-title class="ms-2 mt-4">
+        部門管理
+      </v-card-title>
 
       <v-card-text>
         <!-- 顯示現有部門列表 -->
         <v-list>
-          <v-list-item
-            v-for="(department, index) in departments"
-            :key="index"
-          >
-            <v-list-item-title>{{ department.name }}</v-list-item-title>
-            <v-list-item-action>
+          <div>
+            <v-chip
+              v-for="(department, index) in departments"
+              :key="index"
+              class="mb-2 me-4"
+              color="amber-darken-4"
+              label
+            >
+              {{ department.name }}
               <v-btn
                 icon
-                size="20"
-                @click="deleteDepartment(department._id)"
+                size="18"
+                elevation="2"
+                class="ms-2"
+                @click="openEditDialog(department)"
               >
                 <v-icon
-                  size="16"
-                  color="red"
+                  size="14"
+                  color="blue-lighten-1"
+                >
+                  mdi-pen
+                </v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                size="18"
+                elevation="2"
+                class="ms-2"
+                @click="confirmDelete(department)"
+              >
+                <v-icon
+                  size="14"
+                  color="red-lighten-1"
                 >
                   mdi-delete
                 </v-icon>
               </v-btn>
-            </v-list-item-action>
-          </v-list-item>
+            </v-chip>
+          </div>
         </v-list>
 
         <!-- 新增部門輸入框 -->
         <v-text-field
           v-model="newDepartmentName"
+          class="mt-4"
           label="新增部門名稱"
-          dense
+          variant="outlined"
+          density="compact"
           clearable
         />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="red-darken-1"
+            variant="outlined"
+            size="small"
+            @click="closeDepartmentDialog"
+          >
+            關閉
+          </v-btn>
+          <v-btn
+            color="teal-lighten-1"
+            variant="outlined"
+            size="small"
+            @click="addDepartment"
+          >
+            新增
+          </v-btn>
+        </v-card-actions>
       </v-card-text>
-
-      <v-card-actions>
-        <v-btn
-          color="green"
-          @click="addDepartment"
-        >
-          新增部門
-        </v-btn>
-        <v-btn
-          color="red"
-          @click="closeDepartmentDialog"
-        >
-          取消
-        </v-btn>
-      </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog
+    v-model="editDialog.open"
+    persistent
+    width="400"
+  >
+    <v-card class="rounded-lg">
+      <v-card-title class="ms-2 mt-4">
+        編輯部門
+      </v-card-title>
+
+      <v-card-text>
+        <!-- 編輯部門輸入框 -->
+        <v-text-field
+          v-model="editDepartmentName"
+          class="mt-4"
+          label="部門名稱"
+          variant="outlined"
+          density="compact"
+          clearable
+          :error-messages="editDepartmentError"
+        />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="red-darken-1"
+            variant="outlined"
+            size="small"
+            @click="closeEditDialog"
+          >
+            取消
+          </v-btn>
+          <v-btn
+            color="teal-lighten-1"
+            variant="outlined"
+            size="small"
+            @click="submitEditDepartment"
+          >
+            更新
+          </v-btn>
+        </v-card-actions>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <ConfirmDeleteDialog
+    v-model="isDeleteDialogOpen"
+    :message="`確定要刪除 ${selectedDepartment?.name} 嗎？`"
+    @confirm="deleteDepartmentConfirmed"
+  />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as yup from 'yup'
 import { definePage } from 'vue-router/auto'
 import { useForm, useField } from 'vee-validate'
 import { useApi } from '@/composables/axios'
 import { useSnackbar } from 'vuetify-use-dialog'
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue'
 
 definePage({
   meta: {
@@ -261,12 +385,25 @@ const departmentDialog = ref({ open: false })
 const departments = ref([])
 const newDepartmentName = ref('')
 
+// 確認刪除對話框的狀態
+const isDeleteDialogOpen = ref(false)
+const selectedDepartment = ref(null) // 被選中的部門
+
+// 編輯對話框
+const editDialog = ref({
+  open: false,
+  id: ''
+})
+const editDepartmentName = ref('')
+const editDepartmentError = ref('')
+
 const openDialog = (item) => {
   if (item) {
     isEditing.value = true
     dialog.value.id = item._id
     email.value.value = item.email
     name.value.value = item.name
+    department.value.value = item.department._id
     role.value.value = item.role
   } else {
     isEditing.value = false
@@ -281,12 +418,28 @@ const closeDialog = () => {
   resetForm()
 }
 
+// 初始化時載入部門列表
+onMounted(async () => {
+  await loadDepartments()
+})
+
+// 加載部門列表的函數
+const loadDepartments = async () => {
+  try {
+    const { data } = await apiAuth.get('/department/all')
+    departments.value = data.result
+  } catch (error) {
+    console.error('加載部門失敗', error)
+    createSnackbar({
+      text: '加載部門失敗',
+      snackbarProps: { color: 'red-lighten-1' }
+    })
+  }
+}
+
 // 打開部門管理對話框
-const openDepartmentDialog = async () => {
+const openDepartmentDialog = () => {
   departmentDialog.value.open = true
-  // 加載部門列表
-  const { data } = await apiAuth.get('/department/all')
-  departments.value = data.result
 }
 
 // 關閉對話框
@@ -298,26 +451,98 @@ const closeDepartmentDialog = () => {
 // 新增部門
 const addDepartment = async () => {
   if (!newDepartmentName.value) return
-  await apiAuth.post('/department', { name: newDepartmentName.value })
-  createSnackbar({
-    text: '部門新增成功',
-    snackbarProps: {
-      color: 'teal-darken-1'
-    }
-  })
-  await openDepartmentDialog() // 重新加載部門列表
+  try {
+    await apiAuth.post('/department', { name: newDepartmentName.value })
+    createSnackbar({
+      text: '部門新增成功',
+      snackbarProps: { color: 'teal-darken-1' }
+    })
+    await loadDepartments() // 重新載入部門列表
+    newDepartmentName.value = ''
+  } catch (error) {
+    console.error('新增部門失敗', error)
+    createSnackbar({
+      text: '新增部門失敗',
+      snackbarProps: { color: 'red-lighten-1' }
+    })
+  }
 }
 
-// 刪除部門
-const deleteDepartment = async (id) => {
-  await apiAuth.delete(`/department/${id}`)
-  createSnackbar({
-    text: '部門刪除成功',
-    snackbarProps: {
-      color: 'teal-darken-1'
+// 打開確認刪除對話框
+const confirmDelete = (department) => {
+  selectedDepartment.value = department
+  isDeleteDialogOpen.value = true
+}
+
+// 確認刪除的回調
+const deleteDepartmentConfirmed = async () => {
+  if (selectedDepartment.value) {
+    try {
+      await apiAuth.delete(`/department/${selectedDepartment.value._id}`)
+      createSnackbar({
+        text: '部門刪除成功',
+        snackbarProps: {
+          color: 'teal-darken-1'
+        }
+      })
+      await loadDepartments() // 刪除成功後重新加載部門列表
+    } catch (error) {
+      console.log(error)
+      createSnackbar({
+        text: error?.response?.data?.message || '刪除失敗',
+        snackbarProps: {
+          color: 'red-lighten-1'
+        }
+      })
     }
-  })
-  await openDepartmentDialog() // 重新加載部門列表
+  }
+}
+
+// 打開編輯對話框
+const openEditDialog = (department) => {
+  editDepartmentName.value = department.name
+  editDialog.value.id = department._id
+  editDialog.value.open = true
+}
+
+// 關閉編輯對話框
+const closeEditDialog = () => {
+  editDialog.value.open = false
+  editDepartmentName.value = ''
+  editDepartmentError.value = ''
+}
+
+// 提交編輯部門
+const submitEditDepartment = async () => {
+  if (!editDepartmentName.value) {
+    editDepartmentError.value = '部門名稱不能為空'
+    return
+  }
+
+  try {
+    await apiAuth.patch(`/department/${editDialog.value.id}`, {
+      name: editDepartmentName.value
+    })
+    createSnackbar({
+      text: '部門更新成功',
+      snackbarProps: {
+        color: 'teal-darken-1'
+      }
+    })
+
+    // 更新成功後重新加載部門列表
+    await loadDepartments()
+    tableLoadItems()
+    closeEditDialog()
+  } catch (error) {
+    console.log(error)
+    createSnackbar({
+      text: error?.response?.data?.message || '更新失敗',
+      snackbarProps: {
+        color: 'red-lighten-1'
+      }
+    })
+  }
 }
 
 const schema = yup.object({
@@ -328,6 +553,9 @@ const schema = yup.object({
   name: yup
     .string()
     .required('請輸入姓名'),
+  department: yup
+    .string()
+    .required('請選擇部門'),
   role: yup
     .number()
     .required('請選擇使用者身分別'),
@@ -352,6 +580,7 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
   initialValues: {
     email: '',
     name: '',
+    department: '',
     role: 0,
     password: '',
     passwordConfirm: ''
@@ -360,6 +589,7 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
 
 const email = useField('email')
 const name = useField('name')
+const department = useField('department')
 const role = useField('role')
 const password = useField('password')
 const passwordConfirm = useField('passwordConfirm')
@@ -370,7 +600,8 @@ const submit = handleSubmit(async (values) => {
       await apiAuth.patch(`/user/${dialog.value.id}`, {
         email: values.email,
         name: values.name,
-        role: values.role
+        role: values.role,
+        department: values.department
       })
       createSnackbar({
         text: '使用者更新成功',
@@ -384,7 +615,8 @@ const submit = handleSubmit(async (values) => {
         email: values.email,
         name: values.name,
         role: values.role,
-        password: values.password
+        password: values.password,
+        department: values.department // 發送部門ID
       })
       createSnackbar({
         text: '使用者新增成功',
@@ -417,6 +649,7 @@ const tableHeaders = [
   { title: '使用者編號', align: 'left', sortable: true, key: 'userId' },
   { title: 'email', align: 'left', sortable: true, key: 'email' },
   { title: '姓名', align: 'left', sortable: true, key: 'name' },
+  { title: '部門', align: 'left', sortable: true, key: 'department.name' },
   { title: '權限', align: 'left', sortable: true, key: 'role' },
   { title: '操作', align: 'left', sortable: false, key: 'action' }
 ]

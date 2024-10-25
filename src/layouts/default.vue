@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer>
+    <v-navigation-drawer permanent>
       <v-list class="h-100 d-flex flex-column justify-space-between">
         <div>
           <v-card
@@ -72,12 +72,12 @@ import { useSnackbar } from 'vuetify-use-dialog'
 
 // const { mdAndUp } = useDisplay()
 const user = useUserStore()
-const { createSnackbar } = useSnackbar()
+const createSnackbar = useSnackbar()
 const router = useRouter()
 
 const navItems = [
   { to: '/minutes', text: '會議記錄', icon: 'mdi-note-edit-outline' },
-  { to: '/conference', text: '會議室', icon: 'mdi-office-building-outline' }
+  { to: '/meetingRoom', text: '會議室', icon: 'mdi-office-building-outline' }
 ]
 
 const adminItems = [
@@ -86,12 +86,13 @@ const adminItems = [
 
 const logout = async () => {
   await user.logout()
-  router.push('/minutes')
   createSnackbar({
     text: '登出成功',
     snackbarProps: {
       color: 'teal-darken-1'
     }
   })
+
+  router.push('/login')
 }
 </script>

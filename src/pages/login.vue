@@ -1,11 +1,12 @@
 <template>
   <div
+    v-if="!isChecking"
     id="background"
     class="d-flex justify-center align-center"
   >
     <v-container
       width="340"
-      height="320"
+      height="400"
       class="login-wrapper"
     >
       <v-form
@@ -53,19 +54,43 @@
               Login
             </v-btn>
           </v-col>
+          <v-divider class="my-4" />
+          <v-col
+            cols="12"
+            class="text-center"
+          >
+            <v-btn
+              block
+              elevation="2"
+              color="red darken-1"
+              @click="googleLogin"
+            >
+              <v-icon
+                icon="mdi-google-plus"
+                size="24"
+                class="me-2"
+              />使用Google 登入
+            </v-btn>
+          </v-col>
         </v-row>
       </v-form>
     </v-container>
+    <v-progress-circular
+      v-if="isChecking"
+      indeterminate
+      size="64"
+      color="primary"
+      class="center-screen"
+    />
   </div>
 </template>
 
 <script setup>
 import { definePage } from 'vue-router/auto'
 import validator from 'validator'
-import { ref } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import * as yup from 'yup'
 import { useUserStore } from '@/stores/user'
-import { useApi } from '@/composables/axios'
 import { useSnackbar } from 'vuetify-use-dialog'
 import { useDisplay } from 'vuetify'
 import { useForm, useField } from 'vee-validate'
@@ -77,10 +102,11 @@ definePage({
   }
 })
 
-const { api } = useApi()
 const router = useRouter()
 const user = useUserStore()
 const createSnackbar = useSnackbar()
+// 新增 isChecking 狀態來控制頁面顯示
+const isChecking = ref(true)
 
 const showPassword = ref(false)
 
@@ -100,6 +126,8 @@ const { handleSubmit, isSubmitting } = useForm({
 
 const email = useField('email')
 const password = useField('password')
+// 綁定到 Google 登入方法
+const googleLogin = user.googleLogin
 
 const submit = handleSubmit(async (values) => {
   const result = await user.login(values)
@@ -119,6 +147,52 @@ const submit = handleSubmit(async (values) => {
       }
     })
   }
+})
+
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  const email = params.get('email')
+  const avatar = params.get('avatar')
+  const name = params.get('name')
+  const role = parseInt(params.get('role'), 10)
+  const errorMessage = params.get('message') // 抓取錯誤訊息
+
+  // 如果有錯誤訊息，顯示錯誤 Snackbar 並保持在登入頁面
+  if (errorMessage) {
+    createSnackbar({
+      text: errorMessage,
+      snackbarProps: {
+        color: 'red-lighten-1'
+      }
+    })
+    isChecking.value = false
+    return
+  }
+
+  if (token) {
+    user.$patch({
+      token,
+      email,
+      avatar,
+      name,
+      role
+    })
+
+    await nextTick()
+
+    createSnackbar({
+      text: '登入成功',
+      snackbarProps: {
+        color: 'teal-darken-1'
+      }
+    })
+
+    router.push('/minutes')
+  }
+
+  // 完成檢查後顯示頁面
+  isChecking.value = false
 })
 </script>
 
