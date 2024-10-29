@@ -47,6 +47,13 @@ export default defineConfig({
       vueTemplate: true
     })
   ],
+  configureServer (server) {
+    server.watcher.on('change', (file) => {
+      if (file.includes('auto-routes')) {
+        server.invalidateModule('/__vue-router/auto-routes')
+      }
+    })
+  },
   define: { 'process.env': {} },
   resolve: {
     alias: {

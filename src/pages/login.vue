@@ -5,8 +5,8 @@
     class="d-flex justify-center align-center"
   >
     <v-container
-      width="340"
-      height="400"
+      width="380"
+      height="470"
       class="login-wrapper"
     >
       <v-form
@@ -54,7 +54,35 @@
               Login
             </v-btn>
           </v-col>
-          <v-divider class="my-4" />
+          <v-col
+            cols="12"
+            class="py-0 ps-2"
+          >
+            <v-checkbox
+              v-model="rememberMe"
+              label="記住我"
+              hide-details
+              density="compact"
+              color="grey-darken-2"
+            />
+          </v-col>
+          <v-col>
+            <v-row>
+              <v-col cols="5">
+                <v-divider class="my-4" />
+              </v-col>
+              <v-col
+                cols="2"
+                class="d-flex align-center justify-center pa-0"
+                style="letter-spacing: 2px; font-size: 15px; opacity: 60%;"
+              >
+                或使用
+              </v-col>
+              <v-col cols="5">
+                <v-divider class="my-4" />
+              </v-col>
+            </v-row>
+          </v-col>
           <v-col
             cols="12"
             class="text-center"
@@ -69,7 +97,7 @@
                 icon="mdi-google-plus"
                 size="24"
                 class="me-2"
-              />使用Google 登入
+              />Google 登入
             </v-btn>
           </v-col>
         </v-row>
@@ -87,12 +115,12 @@
 
 <script setup>
 import { definePage } from 'vue-router/auto'
-import validator from 'validator'
+// import validator from 'validator'
 import { ref, onMounted, nextTick } from 'vue'
 import * as yup from 'yup'
 import { useUserStore } from '@/stores/user'
 import { useSnackbar } from 'vuetify-use-dialog'
-import { useDisplay } from 'vuetify'
+// import { useDisplay } from 'vuetify'
 import { useForm, useField } from 'vee-validate'
 import { useRouter } from 'vue-router'
 
@@ -109,6 +137,7 @@ const createSnackbar = useSnackbar()
 const isChecking = ref(true)
 
 const showPassword = ref(false)
+const rememberMe = ref(false)
 
 const schema = yup.object({
   email: yup
@@ -130,6 +159,12 @@ const password = useField('password')
 const googleLogin = user.googleLogin
 
 const submit = handleSubmit(async (values) => {
+  if (rememberMe.value) {
+    localStorage.setItem('savedEmail', values.email) // 記住 email
+  } else {
+    localStorage.removeItem('savedEmail') // 沒勾選則刪除
+  }
+
   const result = await user.login(values)
   if (result === '登入成功') {
     createSnackbar({
@@ -150,9 +185,16 @@ const submit = handleSubmit(async (values) => {
 })
 
 onMounted(async () => {
+// 檢查是否有儲存的 email 並自動填入
+  const savedEmail = localStorage.getItem('savedEmail')
+  if (savedEmail) {
+    email.value.value = savedEmail // 自動填入已保存的 email
+    rememberMe.value = true // 自動勾選“記住我”
+  }
+
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
-  const email = params.get('email')
+  const paramEmail = params.get('email')
   const avatar = params.get('avatar')
   const name = params.get('name')
   const role = parseInt(params.get('role'), 10)
@@ -173,7 +215,7 @@ onMounted(async () => {
   if (token) {
     user.$patch({
       token,
-      email,
+      email: paramEmail,
       avatar,
       name,
       role

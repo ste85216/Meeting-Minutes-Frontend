@@ -58,7 +58,7 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
-router.afterEach((to, from) => {
+router.afterEach((to) => {
   document.title = to.meta.title
 }) // 設定網頁標題
 export default router

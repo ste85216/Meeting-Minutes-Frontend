@@ -7,21 +7,34 @@
       <v-col>
         <v-row>
           <v-col>
-            <v-btn @click="openDialog(null)">
+            <v-btn
+              prepend-icon="mdi-account-plus"
+              variant="outlined"
+              color="orange-darken-2"
+              @click="openDialog(null)"
+            >
               新增使用者
             </v-btn>
             <v-btn
+              prepend-icon="mdi-account-multiple-outline"
               class="ms-4"
+              variant="outlined"
+              color="blue-grey-darken-1"
               @click="openDepartmentDialog"
             >
               部門管理
             </v-btn>
           </v-col>
-          <v-col cols="2">
+          <v-col
+            cols="3"
+            class="d-flex justify-end"
+          >
             <v-text-field
               v-model="tableSearch"
               label="搜尋"
               append-inner-icon="mdi-magnify"
+              base-color="#666"
+              color="blue-grey-darken-3"
               variant="outlined"
               density="compact"
               max-width="240"
@@ -618,6 +631,11 @@ const submit = handleSubmit(async (values) => {
         password: values.password,
         department: values.department // 發送部門ID
       })
+
+      await api.post('/lineNotification/send-line-notification', {
+        message: '公司系統新增了一名新員工'
+      })
+
       createSnackbar({
         text: '使用者新增成功',
         snackbarProps: {
